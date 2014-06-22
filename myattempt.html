@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=9" >
+
+<title></title>
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 12px;
+   margin: 8px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 { 
+   font-size:2.2em; 
+}
+
+h2 { 
+   font-size:1.8em; 
+}
+
+h3 { 
+   font-size:1.4em; 
+}
+
+h4 { 
+   font-size:1.0em; 
+}
+
+h5 { 
+   font-size:0.9em; 
+}
+
+h6 { 
+   font-size:0.8em; 
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre {	
+   margin-top: 0;
+   max-width: 95%;
+   border: 1px solid #ccc;
+   white-space: pre-wrap;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code.r, code.cpp {
+   background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * { 
+      background: transparent !important; 
+      color: black !important; 
+      filter:none !important; 
+      -ms-filter: none !important; 
+   }
+
+   body { 
+      font-size:12pt; 
+      max-width:100%; 
+   }
+       
+   a, a:visited { 
+      text-decoration: underline; 
+   }
+
+   hr { 
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote { 
+      padding-right: 1em; 
+      page-break-inside: avoid; 
+   }
+
+   tr, img { 
+      page-break-inside: avoid; 
+   }
+
+   img { 
+      max-width: 100% !important; 
+   }
+
+   @page :left { 
+      margin: 15mm 20mm 15mm 10mm; 
+   }
+     
+   @page :right { 
+      margin: 15mm 10mm 15mm 20mm; 
+   }
+
+   p, h2, h3 { 
+      orphans: 3; widows: 3; 
+   }
+
+   h2, h3 { 
+      page-break-after: avoid; 
+   }
+}
+
+</style>
+
+
+
+
+
+</head>
+
+<body>
+<p>Upon close scrutiny of the training data found <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a>, 
+I realize that there are a lot of columns with the value &ldquo;NA&rdquo;.  </p>
+
+<p>As part of basic preprocessing, I therefore proceed to remove these columns.  </p>
+
+<p>Next, I removed all the columns that are timestamps.  My reasoning is that we should not be concerned about how much or how long (i.e. timestamp2 - timestamp 1) of a particular activity people perform do, but they rather how well they do it. Hence no features with time measurement (<em>raw_timestamp_part_1</em>, <em>raw_timestamp_part_2</em> and <em>cvtd_timestamp</em> etc) are included.  </p>
+
+<p>Lastly, the ids and user_name columns were also removed, as I am not of the opinion that they should be useful in training and testing the model.  Consequently only 53 features were used to train the model.</p>
+
+<p>The training data of 19622 observations were sub split into 70% of sub-training set and 30% of sub-testing data set.  Therefore 13737 observations were used to train the model.
+To obtain the prediction for the 20 test cases, I eventually settled for the random forest, method =&ldquo;rf&rdquo; provided by the caret package.</p>
+
+<pre><code>
+library(caret)
+
+set.seed(44542)
+
+health &lt;- read.table(&quot;c:/harvest/pml-training-cleansed.csv&quot;, header=T, sep=&quot;,&quot;) 
+
+inTrain  &lt;- createDataPartition(y=health$classe,p=0.70,list=FALSE)
+training &lt;-health[inTrain,]
+testing  &lt;-health[-inTrain,]
+
+dim(training) # checking only
+dim(testing) #checking only
+
+
+ctrl = trainControl(method = &quot;cv&quot;, number = 6)
+
+modelFit &lt;- train(classe ~.,data=training,method=&quot;rf&quot;,trControl = ctrl) # for health example
+modelFit
+modelFit$finalModel
+
+exercise &lt;- read.table(&quot;c:/harvest/pml-testing-cleansed.csv&quot;, header=T, sep=&quot;,&quot;) 
+
+predictions &lt;- predict(modelFit,newdata=exercise)
+predictions
+
+</code></pre>
+
+<p>The 20 correct predictions that I submitted for part II are:</p>
+
+<p>B A B A A E D B A A B C B A E E A B B B</p>
+
+</body>
+
+</html>
+
